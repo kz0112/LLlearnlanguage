@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LL LearnLanguage — Екі тіл — шексіз көкжиек!</title>
+  <style>
+    :root{
+  --bg:#fff6f9;           /* Ашық фон */
+  --card:#ffffff;
+  --ink:#333333;
+  --muted:#777;
+  --accent:#ff6b6b;       /* Қызғылт акцент */
+  --accent2:#4dabf7;      /* Көкшіл акцент */
+  --warn:#f59e0b;
+  --err:#ef4444;
+  --ring:0 0 0 3px rgba(255,107,107,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:"Comic Sans MS", "Poppins", sans-serif;background:var(--bg);color:var(--ink)}
+
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 96px}
+
+header{position:sticky;top:0;z-index:50;background:#ffeef2;backdrop-filter:saturate(140%) blur(8px);border-bottom:2px solid #ffd6e0}
+.h-row{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 16px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px}
+.logo span{padding:6px 12px;border-radius:12px;background:linear-gradient(135deg,#ff9aa2,#fecfef);color:#fff;box-shadow:0 3px 6px rgba(0,0,0,.2)}
+
+.btn{appearance:none;border:none;background:#ffd6e0;color:#333;padding:10px 16px;border-radius:16px;cursor:pointer;font-weight:600;transition:.2s}
+.btn:hover{transform:translateY(-2px);background:#ffc0cb}
+.btn.primary{background:linear-gradient(135deg,#ff9aa2,#fecfef);color:#fff}
+.btn.ghost{background:#ffeef2;color:#ff6b6b}
+
+nav.top{border-top:2px solid #ffd6e0;border-bottom:2px solid #ffd6e0;background:#fff0f5}
+.tabs{display:flex;gap:8px;overflow:auto;padding:8px 16px}
+.tab{padding:10px 14px;border-radius:999px;font-weight:700;color:#ff6b6b;background:#fff;border:2px solid #ffd6e0;cursor:pointer;white-space:nowrap}
+.tab.active{background:linear-gradient(135deg,#ff9aa2,#fecfef);color:#fff;border:none}
+
+.grid{display:grid;gap:16px}
+.grid.cards{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+.card{background:#fff;border:2px solid #ffd6e0;border-radius:24px;padding:16px;box-shadow:0 8px 16px rgba(0,0,0,.1);transition:.2s}
+.card:hover{transform:scale(1.02)}
+
+.title{font-size:22px;font-weight:800;margin:0 0 8px;color:#ff6b6b}
+.subtitle{color:var(--muted);margin:0 0 12px}
+
+.pillbar .pill{padding:8px 12px;border-radius:999px;border:2px solid #ffd6e0;background:#ffeef2;color:#ff6b6b;font-weight:600}
+
+.lesson-text{background:#fff8fb;border:2px solid #ffd6e0;border-radius:18px;padding:14px;line-height:1.6;color:#333}
+
+/* Ойын тақталары балаларға арналған стиль */
+.ws-board{display:grid;gap:4px;grid-template-columns:repeat(12,1fr);user-select:none}
+.ws-cell{border:2px solid #ffd6e0;border-radius:10px;padding:8px;text-align:center;background:#fff;color:#ff6b6b;font-weight:700;cursor:pointer}
+.ws-cell.sel{background:#fecfef;border-color:#ff9aa2}
+
+.dd-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dd-item,.dd-slot{padding:12px;border-radius:14px;border:2px dashed #ffb6c1;background:#fff0f5;color:#ff6b6b;font-weight:600;text-align:center}
+.dd-item{cursor:grab}
+.dd-slot.filled{border-style:solid;background:#ffeef2}
+
+footer{text-align:center;margin:40px 0 80px;color:#999;font-size:14px}
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="h-row wrap">
+      <div class="logo">
+        <span>LL</span>
+        <div>
+          <div>LearnLanguage</div>
+          <div class="badge">Two languages — endless horizons · Екі тіл — шексіз көкжиек</div>
+        </div>
+      </div>
+      <div class="lang">
+        <button id="lang-kz" class="btn">Қазақша</button>
+        <button id="lang-en" class="btn">English</button>
+        <button id="btn-cabinet" class="btn primary">👤 <span data-i="cabinet">Кабинет</span></button>
+      </div>
+    </div>
+    <nav class="top">
+      <div class="tabs wrap">
+        <button class="tab active" data-tab="home">🏠 <span data-i="home">Қош келдіңіз</span></button>
+        <button class="tab" data-tab="lessons">📚 <span data-i="lessons">Сабақтар</span></button>
+        <button class="tab" data-tab="games">🎮 <span data-i="games">Ойындар</span></button>
+        <button class="tab" data-tab="tests">📝 <span data-i="tests">Тесттер</span></button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="wrap" id="app">
+    <!-- Views will be injected by JS -->
+  </main>
+  <footer>
+    © <span id="year"></span> LL LearnLanguage · made with 💖 for school kids</a>
+  </footer>
+
+  <div id="toast" class="toast hide"></div>
+
+<script>
+/******** I18N ********/
+const I = {
+  kz: {
+    cabinet:"Кабинет", home:"Қош келдіңіз", lessons:"Сабақтар", games:"Ойындар", tests:"Тесттер",
+    hello:"LL LearnLanguage — платформасына қош келдіңіз!", sub:"Оқы, ойна, тест тапсырып — рейтинг жина! Бұл сайтта сен ойнап, қызықтап, үйренесің! Әр сабақта – жаңа білім, әр ойында – көңілді тапсырма, әр тестте – батылдыққа сынақ! 🚀",
+    start:"Сабаққа өту", retake:"Қайта тапсыру", submit:"Жіберу", yourScore:"Балыңыз", correct:"Дұрыс жауаптар",
+    yourAns:"Сіздің жауаптарыңыз", recent:"Соңғы нәтижелер", rating:"Жалпы рейтинг", empty:"Әзірге нәтиже жоқ.",
+    register:"Оқушы тіркеуі", fio:"Тегі, Аты", grade:"Сыныбы", email:"Электронды пошта", save:"Сақтау", updPhoto:"Суретті өзгерту",
+    logout:"Шығу", profile:"Жеке кабинет", results:"Нәтижелер", edit:"Өңдеу", lessonsHubTitle:"Сабақтар бөлімі",
+    l1:"Ағылшын: Артикльдер", l2:"Ағылшын: To be (I / You / They)", l3:"Ағылшын: Сандар", l4:"Қазақ: Көңіл-күй", l5: "Қазақ: Үйде", l6: "Ағылшын: Жануарлар", l7: "Ағылшын: Жұмыста", l8: "Ағылшын: Киімдер", l9: "Қазақ: Жемістер",
+    go:"Кіру", back:"Артқа", readAll:"Мәтіндерді оқып шығып, тестке өтіңіз", test:"Тест", showAnswers:"Жауаптарды көрсету",
+    gamesHubTitle:"Ойындар бөлімі", g1:"Drag & Drop сәйкестендіру", g2:"Сөз табу (Word Search)", g3: "Викторина (Quiz Challenge)", g4: "Флэшкарталар (Flashcards)", g5: "Сөйлем құрастыру (Sentence Builder)", g6: "Шын немесе Жалған (True/False)",
+    testsHubTitle:"Жалпы тесттер", t1:"Ағылшын тілінен 20 сұрақ", t2:"Қазақ тілінен 20 сұрақ",
+    scoreSaved:"Нәтиже сақталды!", cleared:"Мәліметтер тазартылды", pickImg:"Суретті таңдаңыз",
+  },
+  en: {
+    cabinet:"Cabinet", home:"Welcome", lessons:"Lessons", games:"Games", tests:"Tests",
+    hello:"Welcome to LL LearnLanguage!", sub:"Learn, play, test — keep leveling up! On this site you will play, have fun, learn. In every lesson - new knowledge, in every game - a fun task, in every test - a test of courage! 🚀",
+    start:"Start lesson", retake:"Retake", submit:"Submit", yourScore:"Your Score", correct:"Correct answers",
+    yourAns:"Your answers", recent:"Recent results", rating:"Total rating", empty:"No results yet.",
+    register:"Student Registration", fio:"Full name", grade:"Class", email:"Email", save:"Save", updPhoto:"Change photo",
+    logout:"Logout", profile:"Profile", results:"Results", edit:"Edit", lessonsHubTitle:"Lessons hub",
+    l1:"English: Articles", l2:"English: To be (I / You / They)", l3:"English: Numbers", l4:"Kazakh: Mood", l5: "Kazakh: In home", l6: "English: Animals", l7: "English: In work", l8: "English: Clothes", l9: "Kazakh: Fruits",
+    go:"Enter", back:"Back", readAll:"Read all texts, then take the quiz", test:"Quiz", showAnswers:"Show answers",
+    gamesHubTitle:"Games hub", g1:"Drag & Drop matching", g2:"Word Search", g3: "Quiz Challenge", g4: "Flashcards", g5: "Sentence Builder", g6: "True or False",
+    testsHubTitle:"Master tests", t1:"20 Qs English", t2:"20 Qs Kazakh",
+    scoreSaved:"Score saved!", cleared:"Data cleared", pickImg:"Choose an image",
+  }
+};
+
+/******** State & Storage ********/
+const LS = {
+  user: 'll_user_v1',
+  lang: 'll_lang_v1',
+  results: 'll_results_v1'
+};
+function sget(k, d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } }
+function sput(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let state = {
+  lang: sget(LS.lang,'kz'),
+  user: sget(LS.user,null),
+  results: sget(LS.results,[]) // {type:"lesson/game/test", id, title, score, total, ts}
+};
+
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.remove('hide'); setTimeout(()=>el.classList.add('hide'),1600); }
+function t(key){ return I[state.lang][key]||key; }
+
+/******** Routing ********/
+const app = document.getElementById('app');
+const routes = {
+  home: renderHome,
+  lessons: renderLessons,
+  games: renderGames,
+  tests: renderTests,
+  cabinet: renderCabinet,
+  lessonView: renderLessonView,
+  gameDD: renderGameDD,
+  gameWS: renderGameWS,
+  gameQuiz: renderGameQuiz,    // Quiz Challenge
+  gameFlash: renderGameFlash,  // Flashcards
+  gameSentence: renderGameSentence, // Sentence Builder
+  gameTF: renderGameTF, 
+  testEN: renderTestEN,
+  testKZ: renderTestKZ,
+};
+function go(hash){ location.hash = hash; }
+window.addEventListener('hashchange', ()=>mount());
+
+function mount(){
+  const h = location.hash.replace('#','')||'home';
+  const [name, param] = h.split(':');
+  const view = routes[name]||renderHome;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+  app.innerHTML = '';
+  view(param);
+  updateTexts();
+}
+
+/******** Header Lang & Cabinet ********/
+function updateTexts(){
+  document.querySelector('[data-i="cabinet"]').textContent = t('cabinet');
+  document.querySelector('[data-i="home"]').textContent = t('home');
+  document.querySelector('[data-i="lessons"]').textContent = t('lessons');
+  document.querySelector('[data-i="games"]').textContent = t('games');
+  document.querySelector('[data-i="tests"]').textContent = t('tests');
+}
+
+document.getElementById('lang-kz').onclick = ()=>{ state.lang='kz'; sput(LS.lang,state.lang); mount(); };
+
+document.getElementById('lang-en').onclick = ()=>{ state.lang='en'; sput(LS.lang,state.lang); mount(); };
+
+document.getElementById('btn-cabinet').onclick = ()=>{ go('cabinet'); };
+
+/******** Components ********/
+function el(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+function card(title, subtitle, bodyHtml, actionsHtml=''){
+  const c = el(`<div class="card"><h3 class="title"></h3><p class="subtitle"></p><div class="body"></div><div class="row mt12">${actionsHtml}</div></div>`);
+  c.querySelector('.title').textContent = title;
+  c.querySelector('.subtitle').textContent = subtitle||'';
+  c.querySelector('.body').innerHTML = bodyHtml||'';
+  return c;
+}
+
+function resultRow(r){
+  const d = new Date(r.ts);
+  const when = d.toLocaleString();
+  return `<div class="pill">${r.title} — ${r.score}/${r.total} • ${when}</div>`;
+}
+
+function addResult(rec){
+  state.results.unshift({...rec, ts: Date.now()});
+  sput(LS.results,state.results);
+  showRatingBadge();
+  toast(t('scoreSaved'));
+}
+
+function showRatingBadge(){
+  const total = state.results.reduce((a,b)=>a + (b.score||0),0);
+  const homeTab = document.querySelector('[data-tab="home"]');
+  if(!homeTab) return;
+  let badge = homeTab.querySelector('i');
+  if(!badge){ badge = document.createElement('i'); badge.className='pill'; badge.style.marginLeft='8px'; homeTab.appendChild(badge); }
+  badge.textContent = `${t('rating')}: ${total}`;
+}
+
+/******** Home ********/
+function renderHome(){
+  const g = document.createElement('div');
+  g.className='grid';
+  const kpis = `
+    <div class="kpi">
+       <img src="https://user63758.clients-cdnnow.ru/storage/22243/58872/a699b015209417409d73f08ce8bf6a8a13dd9d27.png" alt="Fun learning" style="width:100%;border-radius:12px;margin-bottom:12px">
+      </div>`;
+  g.appendChild(card(t('hello'), t('sub'), kpis));
+
+  // 🔴 Результат көрсетілмейді, тек бос сәлемдесу бөлімі
+  app.appendChild(g);
+  showRatingBadge();
+}
+
+
+/******** Lessons Hub ********/
+function renderLessons(){
+  const grid = el('<div class="grid cards"></div>');
+  const list = [
+  {id:'l1', title:t('l1'), desc:'Articles a,an,the + 10 quiz', go:'lessonView:l1'},
+  {id:'l2', title:t('l2'), desc:'Ағылшын: To be (I / You / They) + 10 quiz', go:'lessonView:l2'},
+  {id:'l3', title:t('l3'), desc:'Numbers 1234 + 10 quiz', go:'lessonView:l3'},
+  {id:'l4', title:t('l4'), desc:'Көңіл күй атаулары + 10 сұрақ', go:'lessonView:l4'},
+  {id:'l5', title:t('l5'), desc:'Үйде қолданатын сөздер + 10 сұрақ', go:'lessonView:l5'},
+  {id:'l6', title:t('l6'), desc:'Animal name + 10 quiz', go:'lessonView:l6'},
+  {id:'l7', title:t('l7'), desc:'Types of workers + 10 quiz', go:'lessonView:l7'},
+  {id:'l8', title:t('l8'), desc:'Names and types of clothing + 10 quiz', go:'lessonView:l8'},
+  {id:'l9', title:t('l9'), desc:'Жеміс-жидектер + 10 сұрақ', go:'lessonView:l9'},
+];
+
+  list.forEach(x=>{
+    const c = card(x.title, x.desc, '', `<button class="btn primary" onclick="go('${x.go}')">${t('start')}</button>`);
+    grid.appendChild(c);
+  });
+  app.appendChild(grid);
+}
+
+/******** Lessons Data ********/
+/******** Lessons Data ********/
+const LESSONS = {
+  l1: { // Articles
+    title: {kz:'Ағылшын: Артикльдер', en:'English: Articles'},
+    texts: [
+`In English, we use articles before nouns. There are two types of articles: definite (the) and indefinite (a, an).  
+Indefinite articles (a, an) are used when we talk about something for the first time, or when it is not specific. Example: "I saw a cat." This means any cat, not a special one.  
+We use "a" before words starting with consonant sounds: a dog, a house, a teacher.  
+We use "an" before words starting with vowel sounds (a, e, i, o, u): an apple, an orange, an hour (because 'h' is silent).`,
+
+`Definite article "the" is used when we talk about something specific or unique.  
+Example: "The sun is hot." There is only one sun.  
+Another example: "I bought a book. The book is interesting." The first time we say "a book", but later we say "the book" because it is now clear which book.  
+We also use "the" with oceans, rivers, mountains, and superlatives: the Pacific Ocean, the Nile, the best student.`,
+
+`Sometimes we do not use any article. This happens with plural nouns and uncountable nouns when we talk in general.  
+Example: "I like cats." (all cats in general, no article).  
+Example: "Water is important for life." (uncountable noun, no article).  
+Remember: we do not say "the water" unless we talk about specific water: "The water in this bottle is cold."`,
+
+`In short:  
+- Use "a" before consonant sounds (a dog, a pen).  
+- Use "an" before vowel sounds (an egg, an umbrella).  
+- Use "the" for something specific or unique (the sun, the Moon, the teacher in our class).  
+- Use no article for general ideas or uncountable nouns (milk, love, cats).  
+Articles are small words, but they are very important for correct English!`
+    ],
+    glossary: [
+      ['a','артикль, дауыссыздан бұрын'],
+      ['an','артикль, дауыстыдан бұрын'],
+      ['the','белгілі артикль'],
+      ['no article','артикльсіз'],
+      ['noun','зат есім'],
+      ['specific','нақты'],
+      ['general','жалпы'],
+      ['unique','бірегей'],
+      ['vowel','дауысты'],
+      ['consonant','дауыссыз']
+    ],
+    quiz: [
+      {q:'Which article is used before "apple"?', a:1, opts:['a','an','the','no article']},
+      {q:'Which article goes before "dog"?', a:0, opts:['a','an','the','no article']},
+      {q:'Which article is used for unique things like "sun"?', a:2, opts:['a','an','the','no article']},
+      {q:'Which article is missing: "___ book on the table is mine."', a:2, opts:['a','an','the','no article']},
+      {q:'Which article is correct: "I want ___ orange."', a:1, opts:['a','an','the','no article']},
+      {q:'Choose the correct: "He is ___ best player."', a:2, opts:['a','an','the','no article']},
+      {q:'Which article: "She is reading ___ interesting story."', a:1, opts:['a','an','the','no article']},
+      {q:'Which article: "I bought ___ car yesterday."', a:0, opts:['a','an','the','no article']},
+      {q:'Fill the blank: "___ Moon looks bright tonight."', a:2, opts:['a','an','the','no article']},
+      {q:'Correct choice: "He likes to drink ___ water."', a:3, opts:['a','an','the','no article']}
+    ]
+  },
+  l2: { // English To Be (I / You / They)
+  title: {kz:'Ағылшын: To be (I / You / They)', en:'English: To be (I / You / They)'},
+  texts: [
+    `Ағылшын тілінде "to be" етістігі бар. Ол қазақшада "болу" деген мағына береді. 
+    "To be" етістігі адамға байланысты өзгереді:`,
+    `I → am  
+     You → are  
+     They → are`,
+    `Мысалдар:  
+     - I am a student. (Мен оқушымын)  
+     - You are my friend. (Сен менің досымсың)  
+     - They are happy. (Олар бақытты)`,
+    `Есте сақта:  
+     "I" әрқашан "am"-мен,  
+     "You" әрқашан "are"-мен,  
+     "They" әрқашан "are"-мен бірге қолданылады.`
+  ],
+  glossary: [
+    ['I am','Мен ...мын'],
+    ['You are','Сен ...сың'],
+    ['They are','Олар ...'],
+    ['student','оқушы'],
+    ['friend','дос'],
+    ['happy','бақытты']
+  ],
+  quiz: [
+    {q:'I ___ a student.', a:0, opts:['am','is','are']},
+    {q:'You ___ my friend.', a:2, opts:['am','is','are']},
+    {q:'They ___ happy.', a:2, opts:['am','is','are']},
+    {q:'I ___ from Almaty.', a:0, opts:['am','is','are']},
+    {q:'You ___ kind.', a:2, opts:['am','is','are']},
+    {q:'They ___ students.', a:2, opts:['am','is','are']},
+    {q:'I ___ seven years old.', a:0, opts:['am','is','are']},
+    {q:'You ___ in the classroom.', a:2, opts:['am','is','are']},
+    {q:'They ___ my classmates.', a:2, opts:['am','is','are']},
+    {q:'I ___ at school now.', a:0, opts:['am','is','are']}
+  ]
+},
+l3: { // English Numbers for Beginners
+  title: {kz:'Ағылшын: Сандар', en:'English: Numbers'},
+  texts: [
+    `Hello! Today we will learn numbers in English. Numbers help us count things around us. Let's start from 1 to 10. Repeat after me: One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten.`,
+    `We use numbers every day: counting toys, apples, books, or even friends. When you see a number, try to say it in English. Practice makes you better!`,
+    `Games are fun ways to remember numbers. You can count objects in your room and say their names in English.`
+  ],
+  glossary: [
+    ['one','бір'], ['two','екі'], ['three','үш'], ['four','төрт'], ['five','бес'],
+    ['six','алты'], ['seven','жеті'], ['eight','сегіз'], ['nine','тоғыз'], ['ten','он'],
+    ['count','санап шығу'], ['number','сан']
+  ],
+  quiz: [
+    {q:'Number 1 in English is…', a:0, opts:['One','Two','Three','Four']},
+    {q:'Number 2 in English is…', a:1, opts:['Three','Two','One','Five']},
+    {q:'Number 3 in English is…', a:1, opts:['Two','Three','Four','One']},
+    {q:'How do you say 4 in English?', a:0, opts:['Four','Five','Three','Two']},
+    {q:'Number 5 in English is…', a:0, opts:['Five','Four','Six','Seven']},
+    {q:'Which is 6?', a:0, opts:['Six','Seven','Eight','Five']},
+    {q:'Number 7 in English is…', a:1, opts:['Eight','Seven','Six','Nine']},
+    {q:'8 in English is…', a:0, opts:['Eight','Seven','Nine','Six']},
+    {q:'9 in English is…', a:0, opts:['Nine','Eight','Ten','Seven']},
+    {q:'Number 10 in English is…', a:1, opts:['Nine','Ten','Eleven','Eight']}
+  ]
+},
+l4: { // Kazakh Mood for Kids
+  title: {kz:'Қазақ: Көңіл-күй', en:'Kazakh: Mood'},
+  texts: [
+    `Сәлем! Менің атым — Айша. Бүгін біз көңіл-күйді үйренеміз. Қуанышты, ренішті, қорқақ немесе ұялшақ сезімдерді қалай айтуға болатынын білесің бе?`,
+    `Қуанышты болғанда: "Мен өте қуаныштымын!", "Мен бақыттымын!" деп айтамыз. Ренішті болса: "Мен ренжіп тұрмын", "Көңілсізмін" дейміз.`,
+    `Қорқақ немесе ұялшақ болған кезде: "Мен қорқып тұрмын", "Мен ұялшақпын" деп айтамыз. Енді сезімдерімізді сөзбен білдіруді үйренейік.`
+  ],
+  glossary: [
+    ['көңіл-күй','mood'],
+    ['қуанышты','happy'],
+    ['ренішті','sad'],
+    ['қорқақ','scared'],
+    ['ұялшақ','shy'],
+    ['бақытты','joyful'],
+    ['күлкілі','funny'],
+    ['сезім','feeling'],
+    ['сөйлесу','speaking'],
+    ['айту','say']
+  ],
+  quiz: [
+    {q:'Сәлемдескенде қалай айтуға болады?', a:0, opts:['Қал-жағдайың қалай?','Менің атым Айша','Рахмет','Көріскенше']},
+    {q:'Қандай сөз қуанышты білдіреді?', a:0, opts:['Қуаныш','Мектеп','Кітап','Сабақ']},
+    {q:'Сөз «көңіл-күй» ағылшынша?', a:0, opts:['Mood','Book','Teacher','Play']},
+    {q:'Қай сөйлем қуанышты білдіреді?', a:0, opts:['Мен өте қуаныштымын!','Мен сабаққа бардым','Мен кітап оқимын','Мен үйге келдім']},
+    {q:'Қайсы сөз ренішті білдіреді?', a:0, opts:['Көңілсіз','Дос','Сабақ','Ойыншық']},
+    {q:'«Мен бақыттымын» қай көңіл-күй?', a:0, opts:['Қуанышты','Қалжың','Сыни','Ұялшақ']},
+    {q:'Қайсы эмоция дұрыс емес?', a:2, opts:['Қуаныш','Көңілсіз','Сағат','Реніш']},
+    {q:'Сөйлем «Мен ренжіп тұрмын» қандай көңіл-күйді білдіреді?', a:0, opts:['Ренішті','Қуанышты','Қалжың','Сабаққа']},
+    {q:'«Қалжың» сөзі қандай көңіл-күй?', a:0, opts:['Күлкілі','Реніш','Қалжың','Бақыт']},
+    {q:'Кішкентайларға көңіл күйді үйретудің мақсаты?', a:0, opts:['Сезімдерін айту','Сандарды санау','Кітап оқу','Таңғы ас']}
+  ]
+},
+  // 5-қазақ оқу сауаттылығы
+  l5: { 
+  title: {kz:'Қазақ: Үйде', en:'Kazakh: In home'},
+  texts: [
+    `Бұл үйде біз әртүрлі заттармен танысамыз. Мысалы: үстел, орындық, төсек, кітап, ойыншық. Үйдің әр бөлмесінде әртүрлі заттар бар. Мысалы, ас бөлмеде үстел мен орындықтар, жатын бөлмеде төсек пен жастықтар. Оқу бөлмесінде кітаптар мен дәптерлер бар.`,
+
+    `Айша әр затты атап, қайда қолданылатынын біледі. Үйде оқу, ойнау, демалу үшін заттарды қолданамыз. Сонымен қатар, әр заттың атауын есте сақтау және оны дұрыс қолдану маңызды. Айша ойыншықтармен ойнап, кітаптарын оқып, төсекке барып демалады. Үйде әр зат өзінің ерекше рөлі бар.`
+  ],
+  glossary: [
+    ['үстел','table'],['орындық','chair'],['төсек','bed'],['кітап','book'],['ойыншық','toy'],
+    ['үй','home'],['бөлме','room'],['ас бөлме','kitchen'],['жатын бөлме','bedroom'],
+    ['оқу','to read/study'],['ойнау','to play'],['демалу','to rest'],['жастық','pillow'],['дәптер','notebook']
+  ],
+  quiz: [
+    {q:'Үйде қандай бөлмелер бар мәтінде?', opts:['Мектеп, парк','Ас бөлме, жатын бөлме, оқу бөлме','Саябақ, дүкен'], a:1},
+    {q:'Айша қай заттармен танысады?', opts:['Үстел, орындық, төсек, кітап, ойыншық','Телефон, машина','Дала, ағаш'], a:0},
+    {q:'«Төсек» не үшін қолданылады?', opts:['Ұйықтау үшін','Оқыту үшін','Ойын ойнау үшін'], a:0},
+    {q:'Кітапты не үшін қолданамыз?', opts:['Оқу үшін','Тамақ ішу үшін','Ұйықтау үшін'], a:0},
+    {q:'Ойыншықтың мақсаты?', opts:['Ойнау үшін','Жүгіру үшін','Ұйықтау үшін'], a:0},
+    {q:'Үстел не үшін қажет?', opts:['Оқу немесе тамақ ішу үшін','Жүгіру үшін','Саяхат үшін'], a:0},
+    {q:'Айша үйде не істейді?', opts:['Оқиды, ойнайды, демалады','Саяхатқа шығады','Дүкенге барады'], a:0},
+    {q:'Қайсысы үй заттары емес?', opts:['Үстел, орындық','Кітап, ойыншық','Автобус, саябақ'], a:2},
+    {q:'«Жастық» не үшін қажет?', opts:['Төсекте бас үшін','Тамақ ішу үшін','Ойын ойнау үшін'], a:0},
+    {q:'«Үй» сөзі нені білдіреді?', opts:['Оқу орны','Тұрғын жер','Саябақ'], a:1}
+  ]
+},
+
+
+l6: { 
+  title: {kz:'Ағылшын: Жануарлар', en:'English: Animals'},
+  texts: [
+    `Animals live all around us. Some live in the forest, others in the water or at home as pets. Cats meow, dogs bark, birds sing, and fish swim. Learning animal names and sounds is fun!`,
+    `Children can learn about animal habits, what they eat, and how they move. For example, rabbits hop, cats sleep, and dogs play with balls.`
+  ],
+  glossary: [
+    ['cat','we say meow, a common pet'],['dog','barks, a friendly pet'],['bird','flies, sings'],['fish','swims in water'],['rabbit','hops, eats carrots'],
+    ['forest','a place with many trees'],['pet','animal kept at home'],['habits','things animals usually do']
+  ],
+  quiz: [
+    {q:'Which animal says "meow"?', opts:['Cat','Dog','Rabbit'], a:0},
+    {q:'Which animal hops?', opts:['Dog','Rabbit','Fish'], a:1},
+    {q:'Where do fish live?', opts:['Forest','Water','House'], a:1},
+    {q:'What does a bird do?', opts:['Swims','Sings','Barks'], a:1},
+    {q:'Which is a pet?', opts:['Lion','Dog','Tiger'], a:1},
+    {q:'Which animal flies?', opts:['Cat','Bird','Rabbit'], a:1},
+    {q:'What do rabbits eat?', opts:['Carrots','Fish','Bread'], a:0},
+    {q:'Which animal is friendly?', opts:['Dog','Snake','Bear'], a:0},
+    {q:'Animal in the forest?', opts:['Elephant','Fox','Shark'], a:1},
+    {q:'Which swims in water?', opts:['Dog','Fish','Bird'], a:1}
+  ]
+},
+
+l7: { 
+  title: {kz:'Ағылшын: Жұмыста', en:'English: At Work'},
+  texts: [
+    `At work, people use many tools and do different tasks. Computers, desks, chairs, pens, and papers help them complete jobs.`,
+    `Workers have roles: bosses give instructions, colleagues help each other, and assistants organize things. Learning office words helps children understand everyday life.`
+  ],
+  glossary: [
+    ['computer','used for typing and learning'],['desk','a table for work'],['chair','sit on it'],['boss','gives instructions'],['colleague','works with you'],
+    ['pen','write with it'],['paper','write or print on it'],['office','place where people work'],['task','a job to do']
+  ],
+  quiz: [
+    {q:'Where do people type emails?', opts:['Computer','Chair','Car'], a:0},
+    {q:'Who gives instructions?', opts:['Colleague','Boss','Student'], a:1},
+    {q:'Where do we sit?', opts:['Desk','Chair','Book'], a:1},
+    {q:'What do we write with?', opts:['Pen','Computer','Chair'], a:0},
+    {q:'Where is the office?', opts:['At home','At work','In the park'], a:1},
+    {q:'Who helps coworkers?', opts:['Boss','Colleague','Dog'], a:1},
+    {q:'What is a task?', opts:['A game','A job to do','A pet'], a:1},
+    {q:'What do we put on a desk?', opts:['Paper','Fish','Hat'], a:0},
+    {q:'What helps organize tasks?', opts:['Assistant','Rabbit','Chair'], a:0},
+    {q:'Where do people work?', opts:['School','Office','Zoo'], a:1}
+  ]
+},
+
+l8: { 
+  title: {kz:'Ағылшын: Киімдер', en:'English: Clothes'},
+  texts: [
+    `Clothes are what we wear every day. Shirts, pants, dresses, hats, shoes, and coats keep us comfortable and protect us from weather.`,
+    `Children learn when to wear clothes: warm coats in winter, hats in sun, and shoes to walk outside. Choosing the right clothes is fun and important.`
+  ],
+  glossary: [
+    ['shirt','worn on the upper body'],['pants','worn on the legs'],['dress','one-piece clothing for girls'],['hat','worn on the head'],['shoes','worn on feet'],
+    ['coat','warm outer clothing'],['clothes','things we wear'],['weather','sun, rain, snow, wind'],['comfortable','feeling good to wear']
+  ],
+  quiz: [
+    {q:'What do we wear on our feet?', opts:['Hat','Shoes','Shirt'], a:1},
+    {q:'Which clothes keep us warm?', opts:['Coat','Dress','Shoes'], a:0},
+    {q:'What do we wear on the head?', opts:['Pants','Hat','Shirt'], a:1},
+    {q:'One-piece clothing for girls?', opts:['Dress','Pants','Coat'], a:0},
+    {q:'Clothes help us…', opts:['Eat','Stay comfortable','Sleep'], a:1},
+    {q:'What to wear in winter?', opts:['Coat','Shorts','Hat'], a:0},
+    {q:'What do we wear on the upper body?', opts:['Shirt','Shoes','Dress'], a:0},
+    {q:'Shoes are for…', opts:['Hands','Feet','Head'], a:1},
+    {q:'What protects from sun?', opts:['Hat','Coat','Shoes'], a:0},
+    {q:'Clothes are…', opts:['Food','Things we wear','Toys'], a:1}
+  ]
+},
+
+l9: { 
+  title: {kz:'Қазақ: Жемістер', en:'Kazakh: Fruits'},
+  texts: [
+    `Жемістер пайдалы және дәмді. Алма қызыл, тәтті және қытырлақ. Банандар сары және жұмсақ. Жүзім шоқ болып өседі. Апельсиндер шырынды және дәрумендерге толы.`, 
+`Балалар жеміс атауларын, түсін және дәмін тануға үйренеді. Жемістерді жеу бізге күн сайын күшті және сау болуға көмектеседі.` ],
+  glossary: [
+  ['алма','apple'],['банан','banana'],['жүзім','grapes'],['апельсин','orange'],['алмұрт','pear'], 
+  ['жеміс','fruit'],['дәрумендер','vitamins'],['денсаулыққа пайдалы','good for health'],['дәмді','delicious'],['жеу','eat']],
+  quiz: [
+  {q:'Қай жеміс қызыл түсті?', opts:['Алма','Банан','Жүзім'], a:0},
+  {q:'Сары және жұмсақ жеміс қайсы?', opts:['Банан','Апельсин','Алмұрт'], a:0},
+  {q:'Қайсысы топтасып өседі?', opts:['Жүзім','Алма','Апельсин'], a:0},
+  {q:'Қай жеміс шырынды және дәруменге бай?', opts:['Апельсин','Банан','Алмұрт'], a:0},
+  {q:'Қайсысы тәтті және жұмсақ?', opts:['Алмұрт','Алма','Жүзім'], a:0},
+  {q:'Жемістер қалай сипатталады?', opts:['Дәмді және пайдалы','Киім','Жануарлар'], a:0},
+  {q:'Денсаулығымызға не көмектеседі?', opts:['Жемістер','Аяқ киім','Кітап'], a:0},
+  {q:'Қайсы жеміс қытырлақ?', opts:['Алма','Банан','Жүзім'], a:0},
+  {q:'Жемістің түсі қандай болуы мүмкін?', opts:['Қызыл, сары, күлгін','Көк, қара','Ақ'], a:0},
+  {q:'Жемістерді жеу қандай әсер береді?', opts:['Денсаулыққа пайдалы','Қауіпті','Жалықтырады'], a:0}
+]
+},
+};
+
+/******** Lesson View ********/
+function renderLessonView(id){
+  const data = LESSONS[id];
+  if(!data){ app.innerHTML = '<div class="muted">Not found</div>'; return; }
+  const title = data.title[state.lang]||data.title.kz;
+  const cont = el('<div class="grid"></div>');
+  const texts = data.texts.map((tx,i)=>`<div class="lesson-text mb12"><b>Text ${i+1}.</b> ${tx}</div>`).join('');
+  const gloss = data.glossary.map(([w,def])=>`<div class="pill"><b>${w}</b> — ${def}</div>`).join('');
+  cont.appendChild(card(title, t('readAll'), texts + `<div class="pillbar mt12">${gloss}</div>`));
+
+  // quiz
+  const qWrap = el('<div class="card"><h3 class="title"></h3><div class="body"></div><div class="row mt12"></div></div>');
+  qWrap.querySelector('.title').textContent = t('test');
+  const form = document.createElement('form');
+  form.innerHTML = data.quiz.map((q,i)=>{
+    const opts = q.opts.map((o,ix)=>`<label class="answer"><input type="radio" name="q${i}" value="${ix}"/> <span>${o}</span></label>`).join('');
+    return `<div class="question mb12"><div><b>${i+1}.</b> ${q.q}</div><div class="answers">${opts}</div></div>`;
+  }).join('') + `<div class="flex between mt16"><button class="btn" type="button" onclick="go('lessons')">${t('back')}</button><button class="btn primary" type="submit">${t('submit')}</button></div>`;
+  qWrap.querySelector('.body').appendChild(form);
+  cont.appendChild(qWrap);
+
+  form.onsubmit = (ev)=>{
+    ev.preventDefault();
+    const user = [...new FormData(form).entries()].map(([k,v])=>Number(v));
+    let score=0; const corr=[];
+    data.quiz.forEach((q,i)=>{ const a=q.a; corr.push(a); if(user[i]===a) score++; });
+    const total = data.quiz.length;
+    const resHtml = `<div class="pillbar mt12"><div class="pill">${t('yourScore')}: ${score}/${total}</div></div>
+      <div class="grid mt12"><div class="card"><b>${t('correct')}</b><div class="pillbar mt8">${corr.map((a,i)=>`<div class=\"pill\">${i+1}: ${data.quiz[i].opts[a]}</div>`).join('')}</div></div>
+      <div class="card"><b>${t('yourAns')}</b><div class="pillbar mt8">${user.map((a,i)=>`<div class=\"pill\">${i+1}: ${a!=null?data.quiz[i].opts[a]:"—"}</div>`).join('')}</div></div></div>
+      <div class="row mt12"><button class="btn" onclick="go('lessonView:${id}')">${t('retake')}</button></div>`;
+
+    addResult({type:'lesson', id, title, score, total});
+
+    qWrap.querySelector('.body').innerHTML = resHtml;
+  };
+
+  app.appendChild(cont);
+}
+
+/******** Games Hub ********/
+function renderGames(){
+  const grid = el('<div class="grid cards"></div>');
+
+  const c1 = card(t('g1'), 'Match words to meanings', '', `<button class="btn primary" onclick="go('gameDD')">${t('go')}</button>`);
+  const c2 = card(t('g2'), 'Find all hidden words', '', `<button class="btn primary" onclick="go('gameWS')">${t('go')}</button>`);
+  const c3 = card(t('g3'), 'Answer quiz questions quickly', '', `<button class="btn primary" onclick="go('gameQuiz')">${t('go')}</button>`);
+  const c4 = card(t('g4'), 'Practice with flashcards', '', `<button class="btn primary" onclick="go('gameFlash')">${t('go')}</button>`);
+  const c5 = card(t('g5'), 'Build sentences from words', '', `<button class="btn primary" onclick="go('gameSentence')">${t('go')}</button>`);
+  const c6 = card(t('g6'), 'True or False game', '', `<button class="btn primary" onclick="go('gameTF')">${t('go')}</button>`);
+
+  grid.appendChild(c1); 
+  grid.appendChild(c2);
+  grid.appendChild(c3);
+  grid.appendChild(c4);
+  grid.appendChild(c5);
+  grid.appendChild(c6);
+
+  app.appendChild(grid);
+}
+
+/******** Game: Drag&Drop Matching ********/
+function renderGameDD(){
+  const gameSets = [
+    {
+      title:"Drag & Drop 1",
+      desc:"Сөздерді дұрыс аудармасына апарыңыз.",
+      pairs:[
+        ['hello','сәлем'],['book','кітап'],['teacher','мұғалім'],
+        ['friend','дос'],['city','қала'],['thank you','рақмет']
+      ]
+    },
+    {
+      title:"Drag & Drop 2",
+      desc:"Жануарларды сәйкестендір.",
+      pairs:[
+        ['cat','мысық'],['dog','ит'],['horse','жылқы'],
+        ['bird','құс'],['fish','балық'],['cow','сиыр']
+      ]
+    },
+    {
+      title:"Drag & Drop 3",
+      desc:"Мектеп заттарын сәйкестендір.",
+      pairs:[
+        ['pen','қалам'],['pencil','қарындаш'],['desk','үстел'],
+        ['board','тақта'],['chair','орындық'],['bag','сөмке']
+      ]
+    }
+  ];
+
+  const cont = el('<div class="grid"></div>');
+
+  gameSets.forEach((gs,gi)=>{
+    const wrap = el('<div class="card"></div>');
+    const body = el('<div class="dd-wrap"></div>');
+    const left = el('<div></div>'); 
+    const right = el('<div></div>');
+
+    // shuffle items
+    const shuffled = gs.pairs.slice().sort(()=>Math.random()-0.5);
+    shuffled.forEach(([en,kz])=>{
+      const it = el(`<div class="dd-item" draggable="true" data-key="${en}">${en}</div>`);
+      left.appendChild(it);
+    });
+    gs.pairs.slice().sort(()=>Math.random()-0.5).forEach(([en,kz])=>{
+      const sl = el(`<div class="dd-slot" data-accept="${en}">${kz}</div>`);
+      right.appendChild(sl);
+    });
+    body.appendChild(left); body.appendChild(right);
+    wrap.appendChild(el(`<h3 class="title">${gs.title}</h3>`));
+    wrap.appendChild(body);
+    wrap.appendChild(el(`<div class="mt12 muted">${gs.desc}</div>`));
+
+    let correct=0, total=gs.pairs.length;
+    let dragging=null;
+    wrap.addEventListener('dragstart', e=>{
+      if(e.target.classList.contains('dd-item')) dragging=e.target;
+    });
+    wrap.addEventListener('dragover', e=>{
+      if(e.target.classList.contains('dd-slot')) e.preventDefault();
+    });
+    wrap.addEventListener('drop', e=>{
+      const slot = e.target.closest('.dd-slot'); if(!slot||!dragging) return;
+      const ok = slot.dataset.accept === dragging.dataset.key;
+      slot.classList.add('filled'); 
+      slot.textContent = slot.textContent + ' ✓';
+      slot.style.borderColor = ok? '#22c55e' : '#ef4444';
+      dragging.remove(); dragging=null;
+      if(ok) correct++;
+      if(wrap.querySelectorAll('.dd-item').length===0){
+        const score = correct; 
+        const res = el(`<div class="mt16"><div class="pill">${t('yourScore')}: ${score}/${total}</div>
+        <div class="row mt12"><button class="btn" onclick="go('gameDD')">${t('retake')}</button>
+        <button class="btn primary" onclick="go('games')">OK</button></div></div>`);
+        wrap.appendChild(res);
+        addResult({type:'game', id:'dd'+gi, title:gs.title, score, total});
+      }
+    });
+
+    cont.appendChild(wrap);
+  });
+
+  app.appendChild(cont);
+}
+
+/******** Game: Word Search ********/
+function renderGameWS(){
+  // simple 12x12 grid
+  const words = ['KAZAKH','ENGLISH','GRAMMAR','SCHOOL','HELLO','SALAM','WORD','BOOK'];
+  const size=12; const grid = Array.from({length:size},()=>Array(size).fill(''));
+  function place(word){
+    const dirs = [[0,1], [1,0]]; // 0,1 = жоғарыдан төмен; 1,0 = солдан оңға
+    for(let tries=0;tries<200;tries++){
+      const [dx,dy]=dirs[Math.floor(Math.random()*dirs.length)];
+      let x=Math.floor(Math.random()*size), y=Math.floor(Math.random()*size);
+      if(x+dx*(word.length-1)<0||x+dx*(word.length-1)>=size) continue;
+      if(y+dy*(word.length-1)<0||y+dy*(word.length-1)>=size) continue;
+      let ok=true; for(let i=0;i<word.length;i++){ const c=grid[y+dy*i][x+dx*i]; if(c && c!==word[i]){ok=false;break;} }
+      if(!ok) continue; for(let i=0;i<word.length;i++){ grid[y+dy*i][x+dx*i]=word[i]; }
+      return true;
+    }
+    return false;
+  }
+  words.forEach(w=>place(w));
+  const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++) if(!grid[y][x]) grid[y][x]=letters[Math.floor(Math.random()*26)];
+
+  const cont = el('<div class="grid"></div>');
+  const wrap = el('<div class="card"></div>');
+  wrap.appendChild(el('<h3 class="title">Word Search</h3>'));
+  const board = el('<div class="ws-board"></div>');
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    const cell = el(`<div class="ws-cell" data-x="${x}" data-y="${y}">${grid[y][x]}</div>`);
+    board.appendChild(cell);
+  }
+  wrap.appendChild(board);
+  wrap.appendChild(el(`<div class="mt12">Find words: <div class="pillbar mt8" id="ws-words">${words.map(w=>`<div class='pill' data-w='${w}'>${w}</div>`).join('')}</div></div>`));
+
+  let found=0; let start=null; let sel=[];
+  board.addEventListener('mousedown', e=>{ const c=e.target.closest('.ws-cell'); if(!c) return; start=c; sel=[c]; c.classList.add('sel'); });
+  board.addEventListener('mouseover', e=>{ if(!start) return; const c=e.target.closest('.ws-cell'); if(!c||sel.includes(c)) return; sel.push(c); c.classList.add('sel'); });
+  document.addEventListener('mouseup', ()=>{
+    if(!start) return; const letters = sel.map(c=>c.textContent).join('');
+    const rev = letters.split('').reverse().join('');
+    const hit = words.find(w=>w===letters||w===rev);
+    if(hit){
+      sel.forEach(c=>{ c.style.background='#12303f'; c.style.borderColor='#22c55e'; c.classList.remove('sel'); c.style.cursor='default'; });
+      const tag = document.querySelector(`.pill[data-w='${hit}']`); if(tag){ tag.style.textDecoration='line-through'; tag.style.opacity='.6'; }
+      found++;
+      if(found===words.length){
+        const score=words.length; const total=words.length;
+        wrap.appendChild(el(`<div class='mt16'><div class='pill'>${t('yourScore')}: ${score}/${total}</div>
+        <div class='row mt12'><button class='btn' onclick="go('gameWS')">${t('retake')}</button>
+        <button class='btn primary' onclick="go('games')">OK</button></div></div>`));
+        addResult({type:'game', id:'ws', title:t('g2'), score, total});
+      }
+    } else {
+      sel.forEach(c=>c.classList.remove('sel'));
+    }
+    start=null; sel=[];
+  });
+
+  cont.appendChild(wrap); app.appendChild(cont);
+}
+
+/******** Game: Quiz Challenge ********/
+function renderGameQuiz(){
+  app.innerHTML = '';
+  const wrap = el('<div class="card"></div>');
+  wrap.innerHTML = `
+    <h3>${t('g3')}</h3>
+     <p>Answer the quiz questions quickly.</p>
+    <form id="quizForm">
+      <div class="question">1.Кітап in English?<br>
+        <label><input type="radio" name="q1" value="0"> Book</label><br>
+        <label><input type="radio" name="q1" value="1"> Brother</label>
+      </div>
+      <div class="question mt12">2. Үй in English?<br>
+        <label><input type="radio" name="q2" value="0"> Garden</label><br>
+        <label><input type="radio" name="q2" value="1"> Home</label>
+      </div>
+      <div class="question mt12">3. Машина in English?<br>
+        <label><input type="radio" name="q3" value="0"> Car</label><br>
+        <label><input type="radio" name="q3" value="1"> Black</label>
+      </div>
+      <div class="question mt12">4. Мектеп in English?<br>
+        <label><input type="radio" name="q4" value="0"> School</label><br>
+        <label><input type="radio" name="q4" value="1"> Toy</label>
+      </div>
+      <div class="question mt12">5. Мысық in English?<br>
+        <label><input type="radio" name="q5" value="0"> Cat</label><br>
+        <label><input type="radio" name="q5" value="1"> Skate</label>
+      </div>
+      <div class="question mt12">6. Доп in English?<br>
+        <label><input type="radio" name="q6" value="0"> Window</label><br>
+        <label><input type="radio" name="q6" value="1"> Ball</label>
+      </div>
+      <div class="question mt12">7. Күн in English?<br>
+        <label><input type="radio" name="q7" value="0"> Sun</label><br>
+        <label><input type="radio" name="q7" value="1"> Knife</label>
+      </div>
+      <div class="question mt12">8. Алма in English?<br>
+        <label><input type="radio" name="q8" value="0"> Apple</label><br>
+        <label><input type="radio" name="q8" value="1"> Orange</label>
+      </div>
+      <div class="question mt12">9. Су in English?<br>
+        <label><input type="radio" name="q9" value="0"> Water</label><br>
+        <label><input type="radio" name="q9" value="1"> Milk</label>
+      </div>
+      <div class="question mt12">10. Дос in English?<br>
+        <label><input type="radio" name="q10" value="0"> Friend</label><br>
+        <label><input type="radio" name="q10" value="1"> Watch</label>
+      </div>
+      <div class="question mt12">11. Ағаш in English?<br>
+        <label><input type="radio" name="q11" value="0"> Tree</label><br>
+        <label><input type="radio" name="q11" value="1"> Floor</label>
+      </div>
+      <div class="question mt12">12. Жол in English?<br>
+        <label><input type="radio" name="q12" value="0"> Way</label><br>
+        <label><input type="radio" name="q12" value="1"> Bag</label>
+      </div>
+
+      <button class="btn primary mt12" type="submit">${t('submit')}</button>
+    </form>
+    <div id="quizResult" class="mt12"></div>
+    <div class="row mt12"><button class="btn" onclick="go('games')">${t('back')}</button></div>
+  `;
+  app.appendChild(wrap);
+
+  document.getElementById('quizForm').onsubmit = (e)=>{
+    e.preventDefault();
+    let score=0;
+    if(document.querySelector('input[name="q1"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q2"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q3"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q4"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q5"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q6"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q7"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q8"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q9"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q10"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q11"]:checked')?.value=="0") score++;
+    if(document.querySelector('input[name="q12"]:checked')?.value=="0") score++;
+
+    document.getElementById('quizResult').textContent = `Score: ${score}/12`;
+    addResult({type:'game', id:'quiz', title:t('g3'), score, total:12});
+  };
+}
+
+
+/******** Game: Flashcards ********/
+function renderGameFlash(){
+  app.innerHTML = '';
+  const wrap = el('<div class="card"></div>');
+  const words = [
+  {front:'How are you?', back:'Қалың қалай?'},
+  {front:'I am fine, thank you.', back:'Мен жақсымын, рақмет.'},
+  {front:'What is your name?', back:'Атың кім?'},
+  {front:'My name is Aidos.', back:'Менің атым Айдос.'},
+  {front:'Where are you from?', back:'Сен қай жақтансың?'},
+  {front:'I am from Almaty.', back:'Мен Алматыданмын.'},
+  {front:'Can you help me?', back:'Маған көмектесесің бе?'},
+  {front:'Of course, no problem.', back:'Әрине, ешқандай мәселе жоқ.'},
+  {front:'What time is it?', back:'Сағат қанша болды?'},
+  {front:'It is three o’clock.', back:'Үш болды.'},
+  {front:'I like football.', back:'Маған футбол ұнайды.'},
+  {front:'Do you speak English?', back:'Сен ағылшынша сөйлей аласың ба?'},
+  {front:'Just a little.', back:'Сәл ғана.'},
+  {front:'I don’t understand.', back:'Мен түсінбедім.'},
+  {front:'Please say it again.', back:'Қайтадан айтыңызшы.'},
+  {front:'How much is this?', back:'Бұл қанша тұрады?'},
+  {front:'It is very expensive.', back:'Бұл өте қымбат.'},
+  {front:'I am hungry.', back:'Мен ашпын.'},
+  {front:'Let’s go home.', back:'Кеттік үйге.'},
+  {front:'See you tomorrow.', back:'Ертең кездескенше.'}
+];
+
+  let idx=0;
+  wrap.innerHTML = `
+    <h3>${t('g4')}</h3>
+    <div id="flashcard" class="card mt12 p12 center">Click to flip</div>
+    <div class="row mt12"><button class="btn" onclick="prevFlash()">Prev</button><button class="btn primary" onclick="nextFlash()">Next</button></div>
+    <div class="row mt12"><button class="btn" onclick="go('games')">${t('back')}</button></div>
+  `;
+  app.appendChild(wrap);
+
+  const flash = document.getElementById('flashcard');
+  let showFront=true;
+  function renderCard(){
+    flash.textContent = showFront ? words[idx].front : words[idx].back;
+  }
+  flash.onclick=()=>{ showFront=!showFront; renderCard(); };
+  window.prevFlash=()=>{ if(idx>0) idx--; showFront=true; renderCard(); };
+  window.nextFlash=()=>{ if(idx<words.length-1) idx++; showFront=true; renderCard(); };
+  renderCard();
+
+  addResult({type:'game', id:'flash', title:t('g4'), score:words.length, total:words.length});
+
+}
+
+/******** Game: Sentence Builder ********/
+function renderGameSentence(){
+  app.innerHTML = '';
+  const wrap = el('<div class="card"></div>');
+  
+  // бірнеше сөйлемдер
+  const sentences = [
+    "I am learning English",
+    "She likes reading books",
+    "We are going to school",
+    "They play football outside",
+    "My mother is cooking dinner",
+    "Can you help me please"
+  ];
+  
+  let current = 0;
+
+  wrap.innerHTML = `
+    <h3>${t('g5')}</h3>
+    <p>Arrange the words to form a correct sentence:</p>
+    <div id="sentenceWords" class="pillbar mt12"></div>
+    <div id="sentenceBuild" class="pillbar mt12"></div>
+    <button class="btn primary mt12" onclick="checkSentence()">Check</button>
+    <div id="sentenceResult" class="mt12"></div>
+    <div class="row mt12">
+      <button class="btn" onclick="prevSentence()">Prev</button>
+      <button class="btn primary" onclick="nextSentence()">Next</button>
+    </div>
+    <div class="row mt12"><button class="btn" onclick="go('games')">${t('back')}</button></div>
+  `;
+  app.appendChild(wrap);
+
+  const wordArea=document.getElementById('sentenceWords');
+  const buildArea=document.getElementById('sentenceBuild');
+  const result=document.getElementById('sentenceResult');
+
+  function loadSentence(){
+    wordArea.innerHTML='';
+    buildArea.innerHTML='';
+    result.textContent='';
+    let words = sentences[current].split(" ");
+    // shuffle
+    words = words.sort(()=>Math.random()-0.5);
+    words.forEach(w=>{
+      const btn=el('<button class="pill"></button>');
+      btn.textContent=w;
+      btn.onclick=()=>{ buildArea.appendChild(btn); };
+      wordArea.appendChild(btn);
+    });
+    addResult({type:'game', id:'sentence', title:t('g5'), score:1, total:1});
+  
+  }
+
+  window.checkSentence=()=>{
+    const built=[...buildArea.querySelectorAll('button')].map(b=>b.textContent).join(' ');
+    const correct=sentences[current];
+    result.textContent=(built===correct)?"✅ Correct!":"❌ Try again!";
+  };
+
+  window.nextSentence=()=>{
+    if(current<sentences.length-1){ current++; loadSentence(); }
+  };
+  window.prevSentence=()=>{
+    if(current>0){ current--; loadSentence(); }
+  };
+
+  loadSentence();
+}
+
+/******** Game: True or False ********/
+function renderGameTF(){
+  app.innerHTML = '';
+  const wrap = el('<div class="card"></div>');
+
+  const questions = [
+  {text:"Мысық ағашқа өрлей алады.", ans:true},
+  {text:"Крокодил күн сайын мысық жейді.", ans:false},
+  {text:"The sun rises in the east.", ans:true},
+  {text:"Ай күннен үлкен.", ans:false},
+  {text:"Құстар ұша алады.", ans:true},
+  {text:"Fish can walk on the road.", ans:false},
+  {text:"Иттер жануарлар.", ans:true},
+  {text:"A chair is used for sleeping.", ans:false},
+  {text:"Су өмір үшін қажет.", ans:true},
+  {text:"The sky is green.", ans:false},
+  {text:"Қыс жаздан суық.", ans:true},
+  {text:"Сиыр сүт береді.", ans:true},
+  {text:"Cars can swim in the sea.", ans:false},
+  {text:"Адамдарға тыныс алу үшін ауа қажет.", ans:true},
+  {text:"От суық.", ans:false},
+  {text:"Тәтті алма қызыл болады.", ans:true},
+  {text:"Bananas are yellow.", ans:true},
+  {text:"Күлкі — көңілді білдіреді.", ans:true},
+  {text:"Watermelon is blue.", ans:false},
+  {text:"Кітап оқу — пайдалы.", ans:true}
+];
+
+
+  let current=0, score=0;
+
+  wrap.innerHTML = `
+    <h3>${t('g6')}</h3>
+    <p id="tfQ"></p>
+    <div class="row mt12">
+      <button class="btn" onclick="checkTF(true)">True</button>
+      <button class="btn" onclick="checkTF(false)">False</button>
+    </div>
+    <div id="tfResult" class="mt12"></div>
+    <div class="row mt12"><button class="btn" onclick="go('games')">${t('back')}</button></div>
+  `;
+  app.appendChild(wrap);
+
+  const qEl=document.getElementById('tfQ');
+  const rEl=document.getElementById('tfResult');
+
+  function loadQ(){
+    if(current<questions.length){
+      qEl.textContent=questions[current].text;
+      rEl.textContent='';
+    } else {
+      qEl.textContent="Game Over!";
+      rEl.innerHTML=`Your score: ${score}/${questions.length}`;
+      // ✅ Рейтингке қосу
+      addResult({type:'game', id:'tf', title:t('g6'), score, total:questions.length});
+    }
+  }
+
+  window.checkTF=(ans)=>{
+    if(current>=questions.length) return;
+    if(ans===questions[current].ans){
+      score++;
+      rEl.textContent="✅ Correct!";
+    } else {
+      rEl.textContent="❌ Wrong!";
+    }
+    current++;
+    setTimeout(loadQ, 800);
+  };
+
+  loadQ();
+}
+
+/******** Tests Hub (20 Q each) ********/
+function renderTests(){
+  const grid = el('<div class="grid cards"></div>');
+  const c1 = card(t('t1'), 'Words & for kids', '', `<button class="btn primary" onclick="go('testEN')">${t('go')}</button>`);
+  const c2 = card(t('t2'), 'Қазақша сұрақтар', '', `<button class="btn primary" onclick="go('testKZ')">${t('go')}</button>`);
+  grid.appendChild(c1); grid.appendChild(c2); app.appendChild(grid);
+}
+
+function quizView(title, items, id){
+  const cont = el('<div class="grid"></div>');
+  const wrap = el('<div class="card"></div>');
+  wrap.appendChild(el(`<h3 class='title'>${title}</h3>`));
+  const form = document.createElement('form');
+  form.innerHTML = items.map((q,i)=>{
+    const opts = q.opts.map((o,ix)=>`<label class='answer'><input type='radio' name='q${i}' value='${ix}'/> <span>${o}</span></label>`).join('');
+    return `<div class='question mb12'><div><b>${i+1}.</b> ${q.q}</div><div class='answers'>${opts}</div></div>`;
+  }).join('') + `<div class='flex between mt16'><button class='btn' type='button' onclick="go('tests')">${t('back')}</button><button class='btn primary'>${t('submit')}</button></div>`;
+  wrap.appendChild(form); cont.appendChild(wrap); app.appendChild(cont);
+
+  form.onsubmit = (e)=>{
+    e.preventDefault();
+    const ans=[...new FormData(form).entries()].map(([,v])=>Number(v));
+    let score=0; const corr=[]; items.forEach((q,i)=>{corr.push(q.a); if(ans[i]===q.a) score++;});
+    addResult({type:'test', id, title, score, total:items.length});
+    wrap.innerHTML = `<h3 class='title'>${title}</h3><div class='pillbar mt12'><div class='pill'>${t('yourScore')}: ${score}/${items.length}</div></div>
+      <div class='grid mt12'><div class='card'><b>${t('correct')}</b><div class='pillbar mt8'>${corr.map((a,i)=>`<div class='pill'>${i+1}: ${items[i].opts[a]}</div>`).join('')}</div></div>
+      <div class='card'><b>${t('yourAns')}</b><div class='pillbar mt8'>${ans.map((a,i)=>`<div class='pill'>${i+1}: ${a!=null?items[i].opts[a]:"—"}</div>`).join('')}</div></div></div>
+      <div class='row mt12'><button class='btn' onclick="go('${id}')">${t('retake')}</button></div>`;
+  };
+}
+
+function renderTestEN(){
+  const Q = [];
+const add = (q, a, opts) => Q.push({q, a, opts});
+
+// 20 жеңіл сұрақ
+add('«Сәлем» сөзі қандай?', 1, ['Қоштасу','Амандасу','Ойнау','Тамақтану']);
+add('«Қайырлы таң» қашан айтылады?', 0, ['Таңертең','Түсте','Кешке','Түнде']);
+add('«Рақмет» сөзінің аудармасы қандай?', 1, ['hello','thank you','please','goodbye']);
+add('Қайсысы жеміс?', 0, ['Алма','Тапки','Қалам','Кітап']);
+add('Қайсысы мектепте қолданылады?', 0, ['Қалам','Банан','Сыр','Алма']);
+add('Достарға амандасу қалай болады?', 0, ['Сәлем','Рақмет','Кешіріңіз','Оқимын']);
+add('Қайсысы сары және жұмсақ?', 0, ['Банан','Алма','Қалам','Кітап']);
+add('Қайсысы жазуға арналған?', 0, ['Қалам','Алмұрт','Тапки','Апельсин']);
+add('«Қайырлы түн» сөзін қашан айтамыз?', 0, ['Түнде','Таңертең','Түсте','Кешке']);
+add('Қайсысы тәтті жеміс?', 0, ['Алма','Қалам','Кітап','Сызғыш']);
+add('Қайсысын мектепте қолданамыз?', 0, ['Сызғыш','Банан','Алма','Қала']);
+add('Достарға қоштасу қалай болады?', 0, ['Сау бол','Рақмет','Сәлем','Алма']);
+add('Қайсысы сұйық сусын?', 0, ['Сүт','Қалам','Кітап','Алма']);
+add('«Рақмет» дегенді кімге айтамыз?', 0, ['Көмек көрсеткен адамға','Досқа','Мектепке','Үйге']);
+add('Қайсысы жасыл және дәмді?', 0, ['Алмұрт','Қалам','Кітап','Сызғыш']);
+add('Достарға амандасу үшін не айтамыз?', 0, ['Сәлем','Рақмет','Қайырлы түн','Қайырлы таң']);
+add('Қайсысы апельсиннен кейін келеді?', 0, ['Алма','Қалам','Кітап','Сызғыш']);
+add('Үйде не істейміз?', 0, ['Тамақтанамыз','Қаламмен жазамыз','Сәлем айтамыз','Оқимыз']);
+add('Мектепте не істейміз?', 0, ['Оқимыз','Тамақтанамыз','Ұйықтаймыз','Сапарға шығамыз']);
+add('Қайсысы сары жеміс?', 0, ['Банан','Алма','Қалам','Кітап']);
+
+// Сұрақтарды көрсету
+quizView(t('t2'), Q, 'testKZ');
+
+
+}
+
+function renderTestKZ(){
+  const Q=[]; const add=(q,a,opts)=>Q.push({q,a,opts});
+  add('«Сәлеметсіз бе?» — бұл…',1,['еркін амандасу','ресми амандасу','қоштасу','құттықтау']);
+  add('Көптік жалғауы:',2,['-ым/-ім','-мын/-мін','-лар/-лер','-ға/-ге']);
+  add('«Қайырлы таң» қашан айтылады?',0,['таңертең','түсте','кешке','түнде']);
+  add('«Рақмет» сөзінің аудармасы:',3,['hello','sorry','please','thank you']);
+  add('Септік саны:',1,['6','7','8','5']);
+  add('«Мен бардым» — шақ:',0,['өткен','осы','келер','ауыспалы']);
+  add('«Дос» сөзінің баламасы:',2,['teacher','city','friend','book']);
+  add('Дұрыс реттілік:',2,['VSO','SVO','SOV','OVS']);
+  add('Сыпайы амандасу:',1,['Сәу!','Сәлеметсіз бе?','Салем!','Сәлем!']);
+  add('«Жақсы, өзіңіз?» — бұл…',3,['қоштасу','таңдану','мақтау','жауап қайтару']);
+  add('Ілік септіктің сұрағы:',0,['Кімнің? Ненің?','Кімге? Неге?','Кімде? Неде?','Кімнен? Неден?']);
+  add('Көмектес септік жалғауы:',2,['-да/-де','-дан/-ден','-мен/-бен','-қа/-ке']);
+  add('«Сөздік» сөзінің аудармасы:',1,['grammar','dictionary','article','habit']);
+  add('«Practice makes progress» аудармасы:',2,['Тәжірибе толықтық жасайды','Ойын үйретеді','Тәжірибе — алға жылжу','Сөз — күш']);
+  add('«Қала» —',3,['teacher','friend','book','city']);
+  add('«Әдет» —',1,['answer','custom','respect','question']);
+  add('«Жіктік жалғау» қызметі:',0,['тұлғаны білдіреді','көптікті білдіреді','септікті көрсетеді','тәуелдеуді білдіреді']);
+  add('«-сыз/-сіз» мағынасы:',2,['with','to','without','from']);
+  add('«Жатыс септік» аудармасы:',0,['locative','ablative','genitive','dative']);
+  add('«Қайырлы түн» —',3,['good day','good morning','good evening','good night']);
+  quizView(t('t2'), Q, 'testKZ');
+}
+
+/******** Cabinet ********/
+function renderCabinet(){
+  const u = state.user;
+  const grid = el('<div class="grid"></div>');
+
+  const prof = el('<div class="card"></div>');
+  prof.appendChild(el(`<h3 class='title'>${t('profile')}</h3>`));
+  const img = document.createElement('img'); img.alt='avatar'; img.style.width='96px'; img.style.height='96px'; img.style.borderRadius='50%'; img.style.objectFit='cover'; img.style.border='2px solid #334155';
+  img.src = (u&&u.photo)||'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0b1226"/><circle cx="50" cy="38" r="18" fill="#334155"/><rect x="20" y="64" width="60" height="28" rx="14" fill="#334155"/></svg>`);
+  const form = el(`<form class='mt12'>
+    <div class='row'>
+      <label class='field'><span class='sm'>${t('fio')}</span><input class='input' name='fio' value='${u?u.fio:""}' required/></label>
+      <label class='field'><span class='sm'>${t('grade')}</span><input class='input' name='grade' value='${u?u.grade:""}' required/></label>
+    </div>
+    <div class='row mt8'>
+      <label class='field' style='min-width:260px'><span class='sm'>${t('email')}</span><input class='input' type='email' name='email' value='${u?u.email:""}' required/></label>
+      <label class='field'><span class='sm'>${t('updPhoto')}</span><input class='input' type='file' accept='image/*' name='photo'/></label>
+    </div>
+    <div class='row mt12'>
+      <button class='btn primary'>${t('save')}</button>
+      <button class='btn warn' type='button' id='logout'>${t('logout')}</button>
+    </div>
+  </form>`);
+  const wrap = el('<div class="row" style="align-items:center;gap:16px"></div>'); wrap.appendChild(img); wrap.appendChild(form);
+  prof.appendChild(wrap);
+
+  form.photo.onchange = async (e)=>{
+    const f = e.target.files[0]; if(!f){ toast(t('pickImg')); return; }
+    const b = await f.arrayBuffer(); const base64 = btoa(String.fromCharCode(...new Uint8Array(b)));
+    const data = `data:${f.type};base64,${base64}`; img.src=data;
+  };
+  form.onsubmit = (ev)=>{
+    ev.preventDefault();
+    const fd = new FormData(form);
+    const user = {
+      fio: fd.get('fio'), grade: fd.get('grade'), email: fd.get('email'), photo: img.src
+    };
+    state.user = user; sput(LS.user,user); toast(t('save'));
+  };
+  form.querySelector('#logout').onclick = ()=>{ state.user=null; sput(LS.user,null); toast(t('cleared')); mount(); };
+
+  grid.appendChild(prof);
+
+  const res = el('<div class="card"></div>');
+  res.appendChild(el(`<h3 class='title'>${t('results')}</h3>`));
+  res.appendChild(el(`<div class='pillbar mt8'>${state.results.length?state.results.map(resultRow).join(''):`<span class='muted'>${t('empty')}</span>`}</div>`));
+  grid.appendChild(res);
+
+  app.appendChild(grid);
+}
+
+/******** Init ********/
+document.getElementById('year').textContent = new Date().getFullYear();
+
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+
+showRatingBadge();
+mount();
+</script>
+</body>
+</html>
